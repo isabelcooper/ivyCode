@@ -21,7 +21,7 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - firstTap:
+      - ivycode:
           filters:
             branches:
               only: master
