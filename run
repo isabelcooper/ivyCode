@@ -57,7 +57,7 @@ case "${run_arg}" in
     ;;
  "ci")
     if ! version_check; then install_node; fi
-    nvm install    
+    nvm install
     install_node_dependencies
     npm run test:unit
     ./deploy.sh
