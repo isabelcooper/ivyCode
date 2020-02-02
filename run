@@ -56,6 +56,7 @@ case "${run_arg}" in
     npm run start
     ;;
  "ci")
+    nvm install
     if ! version_check; then install_node; fi
     install_node_dependencies
     npm run test:unit
