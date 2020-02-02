@@ -20,7 +20,5 @@ gcloud auth activate-service-account --key-file=${HOME}/ivycode-service-key.json
 gcloud config set project ${GOOGLE_PROJECT_ID}
 gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 gcloud auth list
-echo ${GOOGLE_PROJECT_ID}
-echo ${GCLOUD_SERVICE_KEY}
 
 gcloud app deploy --project=${GOOGLE_PROJECT_ID} --quiet
