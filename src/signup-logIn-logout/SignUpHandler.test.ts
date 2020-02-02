@@ -2,52 +2,44 @@ import {ReqOf} from "http4js/core/Req";
 import {Method} from "http4js/core/Methods";
 import {expect} from "chai";
 import {SignUpHandler} from "./SignUpHandler";
-import {AlwaysFailsEmployeeStore, buildEmployee, Employee, EmployeeStore, InMemoryEmployeeStore} from "./EmployeeStore";
+import {AlwaysFailsEmployeeStore, buildUser, InMemoryUserStore, User, UserStore} from "./UserStore";
 import {AlwaysFailsTokenManager, InMemoryTokenManager} from "../userAuthtoken/TokenManager";
 import {Random} from "../../utils/Random";
 
 describe('SignUpHandler', () => {
-  let employeeStore: EmployeeStore;
+  let userStore: UserStore;
   let tokenManager: InMemoryTokenManager;
   let signUpHandler: SignUpHandler;
   const fixedToken = Random.string('token');
-  const employee: Employee = buildEmployee();
+  const user: User = buildUser();
 
   beforeEach(() => {
-    employeeStore = new InMemoryEmployeeStore();
+    userStore = new InMemoryUserStore();
     tokenManager = new InMemoryTokenManager();
-    signUpHandler = new SignUpHandler(employeeStore, tokenManager);
+    signUpHandler = new SignUpHandler(userStore, tokenManager);
   });
 
   it('should register a new user and return their name and a token', async () => {
     tokenManager.setToken(fixedToken);
-    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employee)));
+    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(user)));
 
     expect(response.status).to.eql(200);
-    expect(JSON.parse(response.bodyString()).firstName).to.eql(employee.firstName);
+    expect(JSON.parse(response.bodyString()).firstName).to.eql(user.firstName);
     expect(JSON.parse(response.bodyString()).token).to.eql(fixedToken);
-    expect( await employeeStore.findAll()).to.eql([employee])
+    expect( await userStore.findAll()).to.eql([user])
   });
 
   it('should not error if no last name provided', async() => {
     tokenManager.setToken(fixedToken);
-    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employee)));
+    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(user)));
 
     expect(response.status).to.eql(200);
-  });
-
-  it('should assume 0 balance', async() => {
-    tokenManager.setToken(fixedToken);
-    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employee)));
-
-    expect(response.status).to.eql(200);
-    expect(await employeeStore.checkBalance(employee.employeeId)).to.eql(0);
   });
 
   it('should not allow an existing user to sign up a second time',async () =>{
-    await signUpHandler.handle(ReqOf(Method.POST, '/login', JSON.stringify(employee)));
+    await signUpHandler.handle(ReqOf(Method.POST, '/login', JSON.stringify(user)));
 
-    const employeeWithSameId = buildEmployee({employeeId: employee.employeeId});
+    const employeeWithSameId = buildUser({id: user.id});
     const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employeeWithSameId)));
 
     expect(response.status).to.eql(401);
@@ -55,26 +47,26 @@ describe('SignUpHandler', () => {
   });
 
   it('should error if required sign up info is missing',async () => {
-    const brokenEmployee = buildEmployee({employeeId: undefined});
+    const brokenEmployee = buildUser({id: undefined});
     const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(brokenEmployee)));
 
     expect(response.status).to.eql(400);
-    expect(response.bodyString()).to.eql('Bad request - missing required employee details');
+    expect(response.bodyString()).to.eql('Bad request - missing required user details');
   });
 
   it('should handle errors storing new users', async () => {
     const handlerWithFailingStore = new SignUpHandler(new AlwaysFailsEmployeeStore(), tokenManager);
-    const response = await handlerWithFailingStore.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employee)));
+    const response = await handlerWithFailingStore.handle(ReqOf(Method.POST, '/signup', JSON.stringify(user)));
 
     expect(response.status).to.eql(500);
     expect(response.bodyString()).to.eql(
-      `Error storing new user - please contact your administrator. \n Error: store broken on employee: ${employee}`
+      `Error storing new user - please contact your administrator. \n Error: store broken on user: ${user}`
     );
   });
 
   it('should handle errors from the token generator or store', async () => {
-    const handlerWithFailingStore = new SignUpHandler(employeeStore, new AlwaysFailsTokenManager());
-    const response = await handlerWithFailingStore.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employee)));
+    const handlerWithFailingStore = new SignUpHandler(userStore, new AlwaysFailsTokenManager());
+    const response = await handlerWithFailingStore.handle(ReqOf(Method.POST, '/signup', JSON.stringify(user)));
 
     expect(response.status).to.eql(500);
     expect(response.bodyString()).to.eql(

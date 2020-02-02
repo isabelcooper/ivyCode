@@ -1,25 +1,25 @@
 import {Handler, Req, Res} from "http4js";
 import {ResOf} from "http4js/core/Res";
-import {Employee, EmployeeStore} from "./EmployeeStore";
+import {User, UserStore} from "./UserStore";
 import {Token} from "../userAuthtoken/TokenStore";
 import {TokenManagerClass} from "../userAuthtoken/TokenManager";
 
 export class LogInHandler implements Handler {
-  constructor(private employeeStore: EmployeeStore, private tokenManager: TokenManagerClass){}
+  constructor(private userStore: UserStore, private tokenManager: TokenManagerClass){}
 
   async handle(req: Req): Promise<Res> {
-    const reqBody: Employee = JSON.parse(req.bodyString());
+    const reqBody: User = JSON.parse(req.bodyString());
     if (!(
-      reqBody.employeeId &&
-      reqBody.pin)
+      reqBody.email &&
+      reqBody.password)
     ) {
       return ResOf(400, 'Bad request - missing required employee details')
     }
 
-    let matchedEmployee: Employee | undefined;
+    let matchedUser: User | undefined;
     try {
-      matchedEmployee = await this.employeeStore.login(reqBody.pin, reqBody.employeeId);
-      if(!matchedEmployee) {
+      matchedUser = await this.userStore.login(reqBody.password, reqBody.email);
+      if(!matchedUser) {
         return ResOf(401, 'User not recognised')
       }
     } catch (e) {
@@ -28,11 +28,11 @@ export class LogInHandler implements Handler {
 
     let token: Token;
     try {
-      token = await this.tokenManager.generateAndStoreToken(matchedEmployee.employeeId);
+      token = await this.tokenManager.generateAndStoreToken(matchedUser!.id!);
     } catch (e) {
       return ResOf(500, `Error retrieving token - please contact your administrator.`)
     }
 
-    return ResOf(200, JSON.stringify({firstName: matchedEmployee.firstName, token: token.value}));
+    return ResOf(200, JSON.stringify({firstName: matchedUser.firstName, token: token.value}));
   }
 }

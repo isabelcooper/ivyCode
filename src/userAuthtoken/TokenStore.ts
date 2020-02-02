@@ -3,21 +3,21 @@ import {Clock} from "../../utils/Clock";
 import {Random} from "../../utils/Random";
 
 export interface Token {
-  employeeId: string,
+  userId: number,
   value: string,
   expiry: Date
 }
 
 export interface TokenStore {
-  expireAll(employeeId: string): Promise<Token[]>;
+  expireAll(userId: number): Promise<Token[]>;
 
-  find(employeeId: string, token: string): Promise<Token[]>;
+  find(userId: number, token: string): Promise<Token[]>;
 
   findAll(): Promise<Token[]>;
 
-  store(employeeId: string, tokenValue: string, timeToExpiry: number): Promise<Token>;
+  store(userId: number, tokenValue: string, timeToExpiry: number): Promise<Token>;
 
-  updateTokenExpiry(employeeId: string, tokenValue: string, timeToExpiry: number): Promise<Token | undefined>;
+  updateTokenExpiry(userId: number, tokenValue: string, timeToExpiry: number): Promise<Token | undefined>;
 }
 
 export class InMemoryTokenStore implements TokenStore {
@@ -25,9 +25,9 @@ export class InMemoryTokenStore implements TokenStore {
 
   private tokens: Token[] = [];
 
-  public async find(employeeId: string, tokenValue: string): Promise<Token[]> {
+  public async find(userId: number, tokenValue: string): Promise<Token[]> {
     return this.tokens.filter(token => {
-      return token.value === tokenValue && token.employeeId === employeeId
+      return token.value === tokenValue && token.userId === userId
     });
   }
 
@@ -35,38 +35,38 @@ export class InMemoryTokenStore implements TokenStore {
     return this.tokens;
   }
 
-  public async store(employeeId: string, tokenValue: string, timeToExpiry: number): Promise<Token> {
+  public async store(userId: number, tokenValue: string, timeToExpiry: number): Promise<Token> {
     const now = new Date(this.clock.now());
-    const token = {employeeId, value: tokenValue, expiry: Dates.addMinutes(now, timeToExpiry)};
+    const token = {userId: userId, value: tokenValue, expiry: Dates.addMinutes(now, timeToExpiry)};
     this.tokens.push(token);
     return token
   }
 
-  public async expireAll(employeeId: string): Promise<Token[]> {
+  public async expireAll(userId: number): Promise<Token[]> {
     const now = new Date(this.clock.now());
     this.tokens.map(token => {
-      if (token.employeeId === employeeId) {
+      if (token.userId === userId) {
         token.expiry = now
       }
     });
-    return this.tokens.filter(token => token.employeeId === employeeId)!
+    return this.tokens.filter(token => token.userId === userId)!
   }
 
-  public async updateTokenExpiry(employeeId: string, tokenValue: string, tokenExpiryTime: number): Promise<Token | undefined> {
+  public async updateTokenExpiry(userId: number, tokenValue: string, timeToExpiry: number): Promise<Token | undefined> {
     const now = new Date(this.clock.now());
     this.tokens.map(token => {
-      if(token.value === tokenValue && token.employeeId === employeeId) {
-        const newExpiry = Dates.addMinutes(now, tokenExpiryTime);
+      if(token.value === tokenValue && token.userId === userId) {
+        const newExpiry = Dates.addMinutes(now, timeToExpiry);
         return token.expiry = newExpiry
       }
     });
-      return this.tokens.find(token => token.employeeId === tokenValue && token.employeeId === employeeId);
+      return this.tokens.find(token => token.value === tokenValue && token.userId === userId);
   }
 }
 
 export function buildToken(partial: Partial<Token>): Token {
   return {
-    employeeId: Random.string('token', 16),
+    userId: Random.integer(),
     expiry: new Date(Dates.addMinutes(new Date(), 5)),
     value: Random.string('tokenValue'),
     ...partial

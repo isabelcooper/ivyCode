@@ -5,14 +5,14 @@ export class SqlTokenStore implements TokenStore {
   constructor(private database: PostgresDatabase) {
   }
 
-  async store(employeeId: string, tokenValue: string, timeToExpiry: number): Promise<Token> {
+  async store(userId: number, tokenValue: string, timeToExpiry: number): Promise<Token> {
     const sqlStatement = `
-      INSERT INTO tokens (employee_id, value, expiry) 
-      VALUES ('${employeeId}','${tokenValue}', CURRENT_TIMESTAMP + INTERVAL '${timeToExpiry} minute') 
+      INSERT INTO tokens (user_id, value, expiry) 
+      VALUES (${userId},'${tokenValue}', CURRENT_TIMESTAMP + INTERVAL '${timeToExpiry} minute') 
       RETURNING *;`;
     const insertedRow = (await this.database.query(sqlStatement)).rows[0];
     return {
-      employeeId: insertedRow.employee_id,
+      userId: insertedRow.user_id,
       value: insertedRow.value,
       expiry: new Date(insertedRow.expiry)
     }
@@ -23,56 +23,56 @@ export class SqlTokenStore implements TokenStore {
     const rows = (await this.database.query(sqlStatement)).rows;
     return rows.map(row => {
       return {
-        employeeId: row.employee_id,
+        userId: row.user_id,
         value: row.value,
         expiry: new Date(row.expiry)
       }
     })
   }
 
-  async expireAll(employeeId: string): Promise<Token[]> {
+  async expireAll(userId: number): Promise<Token[]> {
     const sqlStatement = `
     UPDATE tokens
     SET expiry = CURRENT_TIMESTAMP
-    WHERE employee_id = '${employeeId}'
+    WHERE user_id = '${userId}'
     RETURNING *;
    `;
     const rows = (await this.database.query(sqlStatement)).rows;
     return rows.map(row => {
       return {
-        employeeId: row.employee_id,
+        userId: row.employee_id,
         expiry: row.expiry,
         value: row.value
       }
     })
   }
 
-  public async find(employeeId: string, tokenValue: string): Promise<Token[]> {
+  public async find(userId: number, token: string): Promise<Token[]> {
     const sqlStatement = `
     SELECT * FROM tokens 
-    WHERE employee_id = '${employeeId}'
-    AND value = '${tokenValue}';
+    WHERE user_id = '${userId}'
+    AND value = '${token}';
     `;
     const rows = (await this.database.query(sqlStatement)).rows;
     return rows.map(row => {
       return {
-        employeeId: row.employee_id,
+        userId: row.user_id,
         value: row.value,
         expiry: new Date(row.expiry)
       }
     })
   }
 
-  public async updateTokenExpiry(employeeId: string, tokenValue: string, tokenExpiryTime: number): Promise<Token | undefined> {
+  public async updateTokenExpiry(userId: number, tokenValue: string, timeToExpiry: number): Promise<Token | undefined> {
     const sqlStatement = `
     UPDATE tokens
-    SET expiry = CURRENT_TIMESTAMP + INTERVAL '${tokenExpiryTime} minute'
-    WHERE employee_id = '${employeeId}'
+    SET expiry = CURRENT_TIMESTAMP + INTERVAL '${timeToExpiry} minute'
+    WHERE user_id = '${userId}'
     RETURNING *;
    `;
     const row = (await this.database.query(sqlStatement)).rows[0];
     return {
-      employeeId: row.employee_id,
+      userId: row.user_id,
       expiry: row.expiry,
       value: row.value
     }

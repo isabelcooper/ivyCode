@@ -8,10 +8,10 @@ export class LogOutHandler implements Handler {
 
   async handle(req: Req): Promise<Res> {
     const reqBody = JSON.parse(req.bodyString());
-    const employeeId = reqBody.employeeId as string;
+    const userId = reqBody.id as number;
 
     try{
-      await this.tokenManager.expireTokens(employeeId);
+      await this.tokenManager.expireTokens(userId);
     } catch (e) {
       return ResOf(500, 'Log out failed - please contact your administrator.')
     }

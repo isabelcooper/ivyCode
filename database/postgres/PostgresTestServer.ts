@@ -23,7 +23,7 @@ export class PostgresTestServer {
     };
   }
 
-  public async startAndGetFirstTapDatabase(): Promise<PostgresDatabase> {
+  public async startAndGetIvyCodeDatabase(): Promise<PostgresDatabase> {
     const adminConnectionDetails = await this.start();
     await new PostgresMigrator(adminConnectionDetails, path.resolve('./database/bootstrap')).migrate();
 

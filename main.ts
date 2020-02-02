@@ -9,14 +9,14 @@ import {LogOutHandler} from "./src/signup-logIn-logout/LogOutHandler";
 import {UniqueUserIdGenerator} from "./utils/IdGenerator";
 import {TokenManager} from "./src/userAuthtoken/TokenManager";
 import {SqlTokenStore} from "./src/userAuthtoken/SqlTokenStore";
-import {SqlEmployeeStore} from "./src/signup-logIn-logout/SqlEmployeeStore";
+import {SqlUserStore} from "./src/signup-logIn-logout/SqlUserStore";
 
 (async () => {
   const clock = Date;
   await new PostgresMigrator(EVENT_STORE_CONNECTION_DETAILS, './database/migrations').migrate();
 
   const database = new PostgresDatabase(new Pool(EVENT_STORE_CONNECTION_DETAILS));
-  const employeeStore = new SqlEmployeeStore(database);
+  const employeeStore = new SqlUserStore(database);
   const tokenStore = new SqlTokenStore(database);
 
   const tokenManager = new TokenManager(tokenStore, new UniqueUserIdGenerator(), clock);
