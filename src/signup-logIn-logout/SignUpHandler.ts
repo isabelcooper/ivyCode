@@ -29,7 +29,6 @@ export class SignUpHandler implements Handler {
 
     let token: Token;
     try {
-      console.log(storedUser);
       token = await this.tokenManager.generateAndStoreToken(storedUser!.id!);
     } catch (e) {
       return ResOf(500, `Error retrieving token - please contact your administrator.`)

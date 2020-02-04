@@ -39,15 +39,15 @@ describe('SignUpHandler', () => {
   it('should not allow an existing user to sign up a second time',async () =>{
     await signUpHandler.handle(ReqOf(Method.POST, '/login', JSON.stringify(user)));
 
-    const employeeWithSameId = buildUser({id: user.id});
-    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employeeWithSameId)));
+    const employeeWithSameEmail = buildUser({email: user.email});
+    const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(employeeWithSameEmail)));
 
     expect(response.status).to.eql(401);
     expect(response.bodyString()).to.eql('User already registered, please log in');
   });
 
   it('should error if required sign up info is missing',async () => {
-    const brokenEmployee = buildUser({id: undefined});
+    const brokenEmployee = buildUser({email: undefined});
     const response = await signUpHandler.handle(ReqOf(Method.POST, '/signup', JSON.stringify(brokenEmployee)));
 
     expect(response.status).to.eql(400);
