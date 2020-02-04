@@ -74,42 +74,42 @@ describe('E2E', function () {
       expect(response2.status).to.eql(401);
     });
 
-  //   it('should not require a last name on registration', async () => {
-  //     const response = await httpClient(ReqOf(Method.POST, `http://localhost:${port}/signup`, JSON.stringify(userToStore)));
-  //     expect(response.status).to.eql(200);
-  //     expect(JSON.parse(response.bodyString()).firstName).to.eql(userToStore.firstName);
-  //   });
-  //
-  //   it('should allow a known user to log in', async () => {
-  //     await userStore.store(userToStore);
-  //     const response = await httpClient(ReqOf(
-  //       Method.POST,
-  //       `http://localhost:${port}/login`,
-  //       JSON.stringify({id: userToStore.id, password: userToStore.password})
-  //     ));
-  //     expect(response.status).to.eql(200);
-  //     expect(JSON.parse(response.bodyString()).firstName).to.eql(userToStore.firstName);
-  //     expect(JSON.parse(response.bodyString()).token).to.exist;
-  //   });
-  //
-  //   it('should log a user out', async () => {
-  //     const storedUser = await userStore.store(userToStore);
-  //     await tokenStore.store(storedUser!.id!, fixedToken, 5);
-  //
-  //     const response = await httpClient(ReqOf(
-  //       Method.POST,
-  //       `http://localhost:${port}/logout`,
-  //       JSON.stringify({id: userToStore.id})
-  //     ));
-  //
-  //     expect(response.status).to.eql(200);
-  //     expect(response.bodyString()).to.eql('Log out successful - Goodbye!');
-  //
-  //     const matchedToken = (await tokenStore.find(userToStore.id, fixedToken))[0];
-  //
-  //     expect(matchedToken!.value).to.eql(fixedToken);
-  //     expect(Dates.stripMillis(matchedToken!.expiry)).to.be.at.most(new Date());
-  //   });
+    it('should not require a last name on registration', async () => {
+      const response = await httpClient(ReqOf(Method.POST, `http://localhost:${port}/signup`, JSON.stringify(userToStore)));
+      expect(response.status).to.eql(200);
+      expect(JSON.parse(response.bodyString()).firstName).to.eql(userToStore.firstName);
+    });
+
+    it('should allow a known user to log in', async () => {
+      await userStore.store(userToStore);
+      const response = await httpClient(ReqOf(
+        Method.POST,
+        `http://localhost:${port}/login`,
+        JSON.stringify({email: userToStore.email, password: userToStore.password})
+      ));
+      expect(response.status).to.eql(200);
+      expect(JSON.parse(response.bodyString()).firstName).to.eql(userToStore.firstName);
+      expect(JSON.parse(response.bodyString()).token).to.exist;
+    });
+
+    it('should log a user out', async () => {
+      const storedUser = await userStore.store(userToStore);
+      await tokenStore.store(storedUser!.id!, fixedToken, 5);
+
+      const response = await httpClient(ReqOf(
+        Method.POST,
+        `http://localhost:${port}/logout`,
+        JSON.stringify({id: storedUser!.id})
+      ));
+
+      expect(response.status).to.eql(200);
+      expect(response.bodyString()).to.eql('Log out successful - Goodbye!');
+// TODO what should tokenstore look up on? front end keeps id?
+      const matchedToken = (await tokenStore.find(storedUser!.id!, fixedToken))[0];
+
+      expect(matchedToken!.value).to.eql(fixedToken);
+      expect(Dates.stripMillis(matchedToken!.expiry)).to.be.at.most(new Date());
+    });
   });
 
 });

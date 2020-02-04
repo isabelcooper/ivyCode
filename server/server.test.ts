@@ -26,9 +26,6 @@ describe('Server', () => {
   const fileHandler = new FileHandler();
 
   const user = buildUser();
-  const encodedCredentials = Buffer.from(`${process.env.FIRSTTAP_CLIENT_USERNAME}:${process.env.FIRSTTAP_CLIENT_PASSWORD}`).toString('base64');
-  const basicAuthHeaders = {'authorization': `Basic ${encodedCredentials}`};
-
   const fixedToken = Random.string('token');
 
   beforeEach(async () => {
@@ -53,34 +50,33 @@ describe('Server', () => {
 
   describe('Signing up, logging in and out', () => {
     it('should allow a new user to be created and return the name & token of the user if successful', async () => {
-      const response = await httpClient(ReqOf(Method.POST, `http://localhost:${port}/signup`, JSON.stringify(user), basicAuthHeaders));
+      const response = await httpClient(ReqOf(Method.POST, `http://localhost:${port}/signup`, JSON.stringify(user)));
       expect(response.status).to.eql(200);
       expect(JSON.parse(response.bodyString()).firstName).to.eql(user.firstName);
       expect(JSON.parse(response.bodyString()).token).to.exist;
     });
 
-    it.skip('should allow an existing user to login using employeeId and password, returning their name', async () => {
+    it('should allow an existing user to login using employeeId and password, returning their name', async () => {
       await userStore.store(user);
       const loginDetails = {
-        id: user.id,
-        pin: user.password
+        email: user.email,
+        password: user.password
       };
-      const response = await httpClient(ReqOf(Method.POST, `http://localhost:${port}/login`, JSON.stringify(loginDetails), basicAuthHeaders));
+      const response = await httpClient(ReqOf(Method.POST, `http://localhost:${port}/login`, JSON.stringify(loginDetails)));
       expect(response.status).to.eql(200);
       expect(JSON.parse(response.bodyString()).firstName).to.eql(user.firstName);
       expect(JSON.parse(response.bodyString()).token).to.eql(fixedToken);
     });
 
     it('should allow logout given an employeeId', async () => {
-      await httpClient(ReqOf(Method.POST, `http://localhost:${port}/signup`, JSON.stringify(user), basicAuthHeaders));
+      await httpClient(ReqOf(Method.POST, `http://localhost:${port}/signup`, JSON.stringify(user)));
       expect(tokenManager.tokens[0].userId).to.equal(user.id);
       expect(tokenManager.tokens[0].expiry).to.be.greaterThan(new Date());
 
       const response = await httpClient(ReqOf(
         Method.POST,
         `http://localhost:${port}/logout`,
-        JSON.stringify({id: user.id}),
-        basicAuthHeaders
+        JSON.stringify({id: user.id})
       ));
       expect(response.status).to.eql(200);
       expect(response.bodyString()).to.eql('Log out successful - Goodbye!');
@@ -93,8 +89,7 @@ describe('Server', () => {
       const response = await httpClient(ReqOf(
         Method.POST,
         `http://localhost:${port}/logout`,
-        JSON.stringify({id: user.id}),
-        basicAuthHeaders
+        JSON.stringify({id: user.id})
       ));
       expect(response.status).to.eql(200);
       expect(response.bodyString()).to.eql('Log out successful - Goodbye!');
@@ -105,9 +100,7 @@ describe('Server', () => {
     it('should load home', async () => {
       const response = await httpClient(ReqOf(
         Method.GET,
-        `http://localhost:${port}/`,
-        undefined,
-        basicAuthHeaders
+        `http://localhost:${port}/`
       ));
       expect(response.status).to.eql(200);
       expect(response.bodyString()).to.include('<title>IvyCode</title>');
