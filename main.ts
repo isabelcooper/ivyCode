@@ -13,6 +13,8 @@ import {SqlUserStore} from "./src/signup-logIn-logout/SqlUserStore";
 
 (async () => {
   const clock = Date;
+  // TODO run locally
+  
   await new PostgresMigrator(EVENT_STORE_CONNECTION_DETAILS, './database/migrations').migrate();
 
   const database = new PostgresDatabase(new Pool(EVENT_STORE_CONNECTION_DETAILS));

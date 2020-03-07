@@ -3,7 +3,7 @@ import {HttpClient} from "http4js/client/HttpClient";
 import {Method} from "http4js/core/Methods";
 import {expect} from "chai";
 import {Server} from "./server";
-import {buildUser, UserStore, InMemoryUserStore} from "../src/signup-logIn-logout/UserStore";
+import {buildUser, InMemoryUserStore, UserStore} from "../src/signup-logIn-logout/UserStore";
 import {SignUpHandler} from "../src/signup-logIn-logout/SignUpHandler";
 import {Random} from "../utils/Random";
 import {LogInHandler} from "../src/signup-logIn-logout/LogInHandler";
@@ -11,6 +11,8 @@ import {LogOutHandler} from "../src/signup-logIn-logout/LogOutHandler";
 import {InMemoryTokenManager} from "../src/userAuthtoken/TokenManager";
 import {Dates} from "../utils/Dates";
 import {FileHandler} from "../utils/FileHandler";
+import {buildRecommendation} from "../src/library/RecommendationStore";
+import {StaticFileReader} from "../src/fileReader/StaticFileReader";
 
 require('dotenv').config();
 
@@ -23,7 +25,7 @@ describe('Server', () => {
   let signUpHandler: SignUpHandler;
   let logInHandler: LogInHandler;
   let logOutHandler: LogOutHandler;
-  const fileHandler = new FileHandler();
+  const fileHandler = new FileHandler(new StaticFileReader());
 
   const user = buildUser();
   const fixedToken = Random.string('token');
@@ -96,14 +98,31 @@ describe('Server', () => {
     });
   });
 
+  describe.skip('Library', async () => {
+    it('should store a recommendation', async () => {
+      const recommendation = buildRecommendation();
+      const response = await httpClient(ReqOf(
+        Method.POST,
+        `http://localhost:${port}/library`,
+        JSON.stringify(recommendation)
+      ));
+
+      expect(response.status).to.eql(200);
+    });
+
+    it.skip('should not allow the same title twice', async () => {
+
+    });
+  });
+
   describe.skip('Loading home', () => {
-    it('should load home', async () => {
+    it('should default to home', async () => {
       const response = await httpClient(ReqOf(
         Method.GET,
         `http://localhost:${port}/`
       ));
       expect(response.status).to.eql(200);
-      expect(response.bodyString()).to.include('<title>IvyCode</title>');
+      expect(response.bodyString()).to.include('<title>Ivy Code</title>');
     });
 
     it('should load css (no auth needed)', async () => {

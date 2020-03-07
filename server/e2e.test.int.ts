@@ -18,6 +18,7 @@ import {FileHandler} from "../utils/FileHandler";
 import {FixedClock} from "../utils/Clock";
 import {SqlTokenStore} from "../src/userAuthtoken/SqlTokenStore";
 import {SqlUserStore} from "../src/signup-logIn-logout/SqlUserStore";
+import {StaticFileReader} from "../src/fileReader/StaticFileReader";
 
 describe('E2E', function () {
   this.timeout(30000);
@@ -34,7 +35,7 @@ describe('E2E', function () {
   let signUpHandler: SignUpHandler;
   let logInHandler: LogInHandler;
   let logOutHandler: LogOutHandler;
-  const fileHandler = new FileHandler();
+  const fileHandler = new FileHandler(new StaticFileReader());
 
   const userToStore = buildUser({id: undefined});
   const fixedToken = Random.string('token');

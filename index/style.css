@@ -1,0 +1,50 @@
+body {
+    font-family: "Lato", sans-serif;
+    font-size: 20px;
+    padding: 20px;
+    background-image: linear-gradient(#fff, #290067);
+}
+
+section {
+    display: flex;
+    height: fit-content;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    padding: 10px 30px;
+    background-color: coral;
+    color: white;
+    font-size: 14px
+}
+
+.selection-block {
+    margin: 5px;
+    padding: 5px;
+    border: 1px dotted coral;
+    background-color: #fef3f3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 170px;
+}
+
+h1 {
+    text-align: center;
+    padding-top: 50px;
+    font-family: "Sura", serif ;
+    color: white;
+    font-size: 46px;
+    background-image: url('/index/hero-lamp.jpg');
+}
+
+.no-display {
+    display: none;
+}
+
+.expanded {
+    display: block;
+    background: #fef3f3;
+}
