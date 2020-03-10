@@ -98,7 +98,7 @@ describe('Server', () => {
     });
   });
 
-  describe.skip('Library', async () => {
+  describe('Library', async () => {
     it('should store a recommendation', async () => {
       const recommendation = buildRecommendation();
       const response = await httpClient(ReqOf(
@@ -108,10 +108,6 @@ describe('Server', () => {
       ));
 
       expect(response.status).to.eql(200);
-    });
-
-    it.skip('should not allow the same title twice', async () => {
-
     });
   });
 

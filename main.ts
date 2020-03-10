@@ -10,16 +10,25 @@ import {UniqueUserIdGenerator} from "./utils/IdGenerator";
 import {TokenManager} from "./src/userAuthtoken/TokenManager";
 import {SqlTokenStore} from "./src/userAuthtoken/SqlTokenStore";
 import {SqlUserStore} from "./src/signup-logIn-logout/SqlUserStore";
+import {InMemoryUserStore, UserStore} from "./src/signup-logIn-logout/UserStore";
+import {InMemoryTokenStore, TokenStore} from "./src/userAuthtoken/TokenStore";
 
 (async () => {
+  const local = Boolean(process.env.LOCAL);
   const clock = Date;
-  // TODO run locally
-  
-  await new PostgresMigrator(EVENT_STORE_CONNECTION_DETAILS, './database/migrations').migrate();
+  let employeeStore: UserStore;
+  let tokenStore: TokenStore;
 
-  const database = new PostgresDatabase(new Pool(EVENT_STORE_CONNECTION_DETAILS));
-  const employeeStore = new SqlUserStore(database);
-  const tokenStore = new SqlTokenStore(database);
+  if(local) {
+    employeeStore = new InMemoryUserStore();
+    tokenStore = new InMemoryTokenStore();
+  } else {
+    await new PostgresMigrator(EVENT_STORE_CONNECTION_DETAILS, './database/migrations').migrate();
+
+    const database = new PostgresDatabase(new Pool(EVENT_STORE_CONNECTION_DETAILS));
+    employeeStore = new SqlUserStore(database);
+    tokenStore = new SqlTokenStore(database);
+  }
 
   const tokenManager = new TokenManager(tokenStore, new UniqueUserIdGenerator(), clock);
 
