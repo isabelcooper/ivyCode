@@ -9,8 +9,9 @@ export class LibraryHandler implements Handler {
 
   async handle(req: Req): Promise<Res> {
     const body = JSON.parse(req.bodyString());
+    const userId = req.header('userId') as string;
     const recommendation: Recommendation = {
-      userId: body.userId, // TODO is this in the body??
+      userId: parseInt(userId),
       date: new Date(this.clock.now()),
       title: body.title,
       category: body.category,

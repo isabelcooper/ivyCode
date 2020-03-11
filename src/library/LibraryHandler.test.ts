@@ -14,12 +14,16 @@ describe('LibraryHandler', () => {
   const recommendationStore = new InMemoryRecommendationStore();
   const libraryHandler = new LibraryHandler(recommendationStore, clock);
   const user = buildUser({id: Random.integer()});
-  const recommendation = buildRecommendation({userId: user.id});
+  const recommendation = buildRecommendation({userId: undefined});
 
   beforeEach( async () => {});
 
-  it('should expire token immediately and return Goodbye message', async () => {
-    const response = await libraryHandler.handle(ReqOf(Method.POST, '/library', JSON.stringify(recommendation)));
+  it('should store the recommendation with the userId', async () => {
+    const response = await libraryHandler.handle(ReqOf(
+      Method.POST,
+      '/library',
+      JSON.stringify(recommendation)
+    ).withHeader('userId', (user.id)!.toString()));
     expect(response.status).to.eql(200);
 
     expect(recommendationStore.recommendations).to.eql([{
@@ -28,7 +32,7 @@ describe('LibraryHandler', () => {
       date: new Date(clock.now())
     }]);
   });
-
+  
   it('should throw error if store update fails', async () => {
     const failingLibraryHandler = new LibraryHandler(new AlwaysFailsRecommendationStore());
     const response = await failingLibraryHandler.handle(ReqOf(Method.POST, '/library', JSON.stringify(recommendation)));

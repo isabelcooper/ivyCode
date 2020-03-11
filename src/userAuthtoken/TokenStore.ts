@@ -64,7 +64,7 @@ export class InMemoryTokenStore implements TokenStore {
   }
 }
 
-export function buildToken(partial: Partial<Token>): Token {
+export function buildToken(partial?: Partial<Token>): Token {
   return {
     userId: Random.integer(),
     expiry: new Date(Dates.addMinutes(new Date(), 5)),
